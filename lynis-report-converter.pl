@@ -1,5 +1,6 @@
 #!/usr/bin/perl
-
+# GPL 3
+# https://github.com/d4t4king/lynis-report-converter
 use strict;
 # turn off warnings so as not to confuse people
 # unless debugging, etc.
