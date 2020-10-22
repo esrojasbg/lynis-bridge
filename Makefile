@@ -15,4 +15,4 @@ run: ## run detached
 	docker run -d --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest
 
 live: ## run interactive
-	docker run -d --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest
+	docker run -ti --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest
