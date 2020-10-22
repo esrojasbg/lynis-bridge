@@ -7,7 +7,7 @@ def db_connection():
     db = mariadb.connect(
         host = os.environ.get('DATABASE_HOST') or 'mariadb',
         port = 3306,
-        user = os.environ.get('DATABASE_USER') or 'lynis'
+        user = os.environ.get('DATABASE_USER') or 'lynis',
         password = os.environ.get('DATABASE_PASSWORD') or 'lynis',
         database = os.environ.get('DATABASE') or 'lynis')
     db.autocommit = True
@@ -39,6 +39,7 @@ def do_upload():
     upload.save(filename)
     stream = os.popen('perl lynis-report-converter.pl -j -i {FILE}'.format(FILE=filename))
     raw = stream.read()
+    os.remove(filename)
     data = json.loads(raw)
     db = db_connection()
     sql = """
