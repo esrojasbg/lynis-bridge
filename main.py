@@ -2,6 +2,7 @@ import os
 import json
 from bottle import route, request, static_file, run
 import mariadb
+import tempfile
 
 def db_connection():
     db = mariadb.connect(
@@ -41,7 +42,7 @@ def init_db():
 def do_upload():
     upload = request.files.get('data')
     client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
-    filename = "/tmp/" + client_ip + upload.filename
+    filename = "/tmp/{name}".format(name=next(tempfile._get_candidate_names()))
     upload.save(filename)
     stream = os.popen('perl lynis-report-converter.pl -j -i {FILE}'.format(FILE=filename))
     raw = stream.read()
