@@ -21,3 +21,11 @@ You just need to query them ;)
 # credits.
 
 `lynis-report-converter.pl` is taken from https://github.com/d4t4king/lynis-report-converter
+
+# SCM
+
+| **host** | **category** |
+| --- | --- |
+| https://git.osuv.de/m/lynis-bridge | origin |
+| https://gitlab.com/markuman/lynis-bridge | pull mirror |
+| https://github.com/markuman/lynis-bridge | push mirror |
