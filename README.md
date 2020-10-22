@@ -6,9 +6,17 @@ Accept lynis-report.dat files (upload), transform it into json and put it into a
 
 ## notes
 
+When using lynis-cron, you can post the result to your lynis-bridge with curl.
+
 ```
-curl -F data=@lynis-report.dat http://localhost:8080/upload
+curl -F data=@lynis-report.dat http://<lynis-bridge>:8080/upload
 ```
+
+# database
+
+Currently only Mariadb >= 10.3 is supported.  
+The table `reports` is using `WITH SYSTEM VERSIONING`. So you got a report history about you hosts.  
+You just need to query them ;)
 
 # credits.
 
