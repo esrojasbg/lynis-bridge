@@ -23,9 +23,13 @@ def init_db():
             dt datetime default now(),
             hostname varchar(256) not null,
             ip varchar(64) not null,
-            data json not null,
-            PRIMARY KEY(id, hostname, ip)
-        ) WITH SYSTEM VERSIONING;
+            report json not null,
+            PRIMARY KEY(id, hostname, ip),
+            hardening_index int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.hardening_index') as int))
+        ) 
+            ENGINE=InnoDB
+            PAGE_COMPRESSED=1
+            WITH SYSTEM VERSIONING;
     """
     cursor = db.cursor()
     cursor.execute(sql)
@@ -44,7 +48,7 @@ def do_upload():
     data['hardening_index'] = int(data['hardening_index'])
     db = db_connection()
     sql = """
-        insert into reports (hostname, ip, `data`) values (?, ?, ?) ON DUPLICATE KEY UPDATE `data` = ?;
+        insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?, dt = now();
     """
     cursor = db.cursor()
     cursor.execute(sql, (data['hostname'], client_ip, json.dumps(data), json.dumps(data)))
