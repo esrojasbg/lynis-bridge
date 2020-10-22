@@ -57,6 +57,7 @@ def do_upload():
     cursor = db.cursor()
     cursor.execute(sql, (data['hostname'], client_ip, json.dumps(data), json.dumps(data)))
     cursor.close()
+    db.close()
         
 
 
