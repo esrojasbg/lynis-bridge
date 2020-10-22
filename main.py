@@ -18,7 +18,7 @@ def init_db():
     sql = """
     create
         table if not exists
-            r(
+            reports(
             id bigint UNSIGNED not null AUTO_INCREMENT,
             dt datetime default now(),
             hostname varchar(256) not null,
