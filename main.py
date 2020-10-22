@@ -41,12 +41,13 @@ def do_upload():
     raw = stream.read()
     os.remove(filename)
     data = json.loads(raw)
+    data['hardening_index'] = int(data['hardening_index'])
     db = db_connection()
     sql = """
         insert into reports (hostname, ip, `data`) values (?, ?, ?) ON DUPLICATE KEY UPDATE `data` = ?;
     """
     cursor = db.cursor()
-    cursor.execute(sql, (data['hostname'], client_ip, raw, raw))
+    cursor.execute(sql, (data['hostname'], client_ip, json.dumps(data), json.dumps(data)))
     cursor.close()
         
 
