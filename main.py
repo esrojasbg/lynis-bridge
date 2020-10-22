@@ -18,7 +18,7 @@ def init_db():
     sql = """
     create
         table if not exists
-            reports(
+            r(
             id bigint UNSIGNED not null AUTO_INCREMENT,
             dt datetime default now(),
             hostname varchar(256) not null,
@@ -26,7 +26,8 @@ def init_db():
             report json not null,
             KEY (id),
             PRIMARY KEY(hostname, ip),
-            hardening_index int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.hardening_index') as int))
+            hardening_index int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.hardening_index') as int)),
+            vulnerable_packages_found int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.vulnerable_packages_found') as int))
         ) 
             ENGINE=InnoDB
             PAGE_COMPRESSED=1
@@ -47,6 +48,7 @@ def do_upload():
     os.remove(filename)
     data = json.loads(raw)
     data['hardening_index'] = int(data['hardening_index'])
+    data['vulnerable_packages_found'] = int(data['vulnerable_packages_found'])
     db = db_connection()
     sql = """
         insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?, dt = now();
