@@ -24,7 +24,8 @@ def init_db():
             hostname varchar(256) not null,
             ip varchar(64) not null,
             report json not null,
-            PRIMARY KEY(id, hostname, ip),
+            KEY (id),
+            PRIMARY KEY(hostname, ip),
             hardening_index int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.hardening_index') as int))
         ) 
             ENGINE=InnoDB
