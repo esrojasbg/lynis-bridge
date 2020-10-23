@@ -36,20 +36,79 @@ def init_db():
     """
     cursor = db.cursor()
     cursor.execute(sql)
+    sql = """
+    create or replace view description as with t as (
+        select
+            *
+        from
+            seq_0_to_999)
+        SELECT
+            hostname,
+            ip,
+            json_unquote(json_extract(`report`, CONCAT('$.details[', cast(t.seq as char), '].id'))) as id,
+            json_unquote(json_extract(`report`, CONCAT('$.details[', cast(t.seq as char), '].description.desc'))) as description,
+            json_unquote(json_extract(`report`, CONCAT('$.details[', cast(t.seq as char), '].description.value'))) as `from`,
+            json_unquote(json_extract(`report`, CONCAT('$.details[', cast(t.seq as char), '].description.prefval'))) as `to`,
+            json_unquote(json_extract(`report`, CONCAT('$.details[', cast(t.seq as char), '].description.field'))) as `in`
+        from
+            reports
+        join t
+        HAVING
+            id is not null;
+    """
+    cursor.execute(sql)
+    sql = """
+    create or replace view suggestions as with t as (
+        select
+            *
+        from
+            seq_0_to_999)
+        SELECT
+            hostname,
+            ip,
+            json_unquote(json_extract(`report`, CONCAT('$.suggestion[', cast(t.seq as char), '].description'))) as suggest,
+            json_unquote(json_extract(`report`, CONCAT('$.suggestion[', cast(t.seq as char), '].id'))) as id,
+            json_unquote(json_extract(`report`, CONCAT('$.suggestion[', cast(t.seq as char), '].severity'))) as severity
+        from
+            reports
+        join t
+        HAVING
+            suggest IS NOT NULL;
+    """
+    cursor.execute(sql)
     cursor.close()
+
+def int_float_str(s):
+    if isinstance(s,dict) or isinstance(s,list) or isinstance(s, int) or isinstance(s, float):
+        return s
+    if s.isdigit():
+        return int(s)
+    else:
+        try:
+            return float(s)
+        except ValueError:
+            return s
+
+def preprocessing(data):
+    keys = list(data.keys())
+    for key in keys:
+        data[key] = int_float_str(data.get(key))
+        data[key.replace('[]','')] = data.pop(key)
+    return data
 
 @route('/upload', method='POST')
 def do_upload():
     upload = request.files.get('data')
     client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
+
     filename = "/tmp/{name}".format(name=next(tempfile._get_candidate_names()))
     upload.save(filename)
+
     stream = os.popen('perl lynis-report-converter.pl -j -i {FILE}'.format(FILE=filename))
     raw = stream.read()
     os.remove(filename)
-    data = json.loads(raw)
-    data['hardening_index'] = int(data['hardening_index'])
-    data['vulnerable_packages_found'] = int(data['vulnerable_packages_found'])
+    data = preprocessing(json.loads(raw))
+   
     db = db_connection()
     sql = """
         insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?, dt = now();
