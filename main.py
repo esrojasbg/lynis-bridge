@@ -4,6 +4,12 @@ from bottle import route, request, HTTPResponse, static_file, run
 import mariadb
 import tempfile
 
+# some globals :)
+VERSION = 1.1
+SQL = """
+    insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?, dt = now();
+"""
+
 def db_connection():
     db = mariadb.connect(
         host = os.environ.get('DATABASE_HOST') or 'mariadb',
@@ -102,7 +108,7 @@ def do_upload():
     agent = request.environ.get('HTTP_USER_AGENT') 
     if agent != 'lynis-bridge':
         return HTTPResponse(status=403)
-        
+
     else:
         upload = request.files.get('data')
         client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
@@ -116,11 +122,8 @@ def do_upload():
         data = preprocessing(json.loads(raw))
     
         db = db_connection()
-        sql = """
-            insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?, dt = now();
-        """
         cursor = db.cursor()
-        cursor.execute(sql, (data['hostname'], client_ip, json.dumps(data), json.dumps(data)))
+        cursor.execute(SQL, (data['hostname'], client_ip, json.dumps(data), json.dumps(data)))
         cursor.close()
         db.close()
         return HTTPResponse(status=200)
