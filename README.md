@@ -6,10 +6,10 @@ Accept lynis-report.dat files (upload), transform it into json and put it into a
 
 ## notes
 
-When using lynis-cron, you can post the result to your lynis-bridge with curl.
+When using lynis-cron, you can post the result to your lynis-bridge with curl (_yes, the user-agent must be set to `lynis-bridge`, otherwise the lynis-bridge will response http code 403_).
 
 ```
-curl -F data=@lynis-report.dat http://<lynis-bridge>:8080/upload
+curl -A "lynis-bridge" -F data=@lynis-report.dat http://<lynis-bridge>:8080/upload
 ```
 
 # database

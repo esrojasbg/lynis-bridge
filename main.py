@@ -1,6 +1,6 @@
 import os
 import json
-from bottle import route, request, static_file, run
+from bottle import route, request, HTTPResponse, static_file, run
 import mariadb
 import tempfile
 
@@ -98,25 +98,32 @@ def preprocessing(data):
 
 @route('/upload', method='POST')
 def do_upload():
-    upload = request.files.get('data')
-    client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
 
-    filename = "/tmp/{name}".format(name=next(tempfile._get_candidate_names()))
-    upload.save(filename)
+    agent = request.environ.get('HTTP_USER_AGENT') 
+    if agent != 'lynis-bridge':
+        return HTTPResponse(status=403)
+        
+    else:
+        upload = request.files.get('data')
+        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR')
 
-    stream = os.popen('perl lynis-report-converter.pl -j -i {FILE}'.format(FILE=filename))
-    raw = stream.read()
-    os.remove(filename)
-    data = preprocessing(json.loads(raw))
-   
-    db = db_connection()
-    sql = """
-        insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?, dt = now();
-    """
-    cursor = db.cursor()
-    cursor.execute(sql, (data['hostname'], client_ip, json.dumps(data), json.dumps(data)))
-    cursor.close()
-    db.close()
+        filename = "/tmp/{name}".format(name=next(tempfile._get_candidate_names()))
+        upload.save(filename)
+
+        stream = os.popen('perl lynis-report-converter.pl -j -i {FILE}'.format(FILE=filename))
+        raw = stream.read()
+        os.remove(filename)
+        data = preprocessing(json.loads(raw))
+    
+        db = db_connection()
+        sql = """
+            insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?, dt = now();
+        """
+        cursor = db.cursor()
+        cursor.execute(sql, (data['hostname'], client_ip, json.dumps(data), json.dumps(data)))
+        cursor.close()
+        db.close()
+        return HTTPResponse(status=200)
         
 
 
