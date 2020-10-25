@@ -5,9 +5,9 @@ import mariadb
 import tempfile
 
 # some globals :)
-VERSION = 1.1
+VERSION = 2.0
 SQL = """
-    insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?, dt = now();
+    insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?;
 """
 
 def db_connection():
@@ -27,7 +27,6 @@ def init_db():
         table if not exists
             reports(
             id bigint UNSIGNED not null AUTO_INCREMENT,
-            dt datetime default now(),
             hostname varchar(256) not null,
             ip varchar(64) not null,
             report json not null,
@@ -83,6 +82,7 @@ def init_db():
     """
     cursor.execute(sql)
     cursor.close()
+    db.close()
 
 def int_float_str(s):
     if isinstance(s,dict) or isinstance(s,list) or isinstance(s, int) or isinstance(s, float):
