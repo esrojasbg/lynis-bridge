@@ -29,7 +29,7 @@ def init_db():
             id bigint UNSIGNED not null AUTO_INCREMENT,
             hostname varchar(256) not null,
             ip varchar(64) not null,
-            report json not null,
+            report json not null WITH SYSTEM VERSIONING,
             KEY (id),
             PRIMARY KEY(hostname, ip),
             hardening_index int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.hardening_index') as int)),
@@ -42,8 +42,7 @@ def init_db():
             index (ROW_END)
         ) 
             ENGINE=InnoDB
-            PAGE_COMPRESSED=1
-            WITH SYSTEM VERSIONING;
+            PAGE_COMPRESSED=1;
     """
     cursor = db.cursor()
     cursor.execute(sql)
