@@ -3,6 +3,7 @@ import json
 from bottle import route, request, HTTPResponse, static_file, run
 import mariadb
 import tempfile
+import bottle
 
 # some globals :)
 VERSION = 2.1
@@ -136,3 +137,4 @@ if __name__ == '__main__':
     init_db()
     run(host='0.0.0.0', port=8080)
 
+app = bottle.default_app()
