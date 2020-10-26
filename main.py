@@ -104,6 +104,10 @@ def preprocessing(data):
         data[key.replace('[]','')] = data.pop(key)
     return data
 
+@route('/')
+def index():
+    return HTTPResponse(status=200)
+
 @route('/upload', method='POST')
 def do_upload():
 
