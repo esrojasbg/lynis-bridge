@@ -11,8 +11,8 @@ clean: ## delete all *.retry files
 build: ## build docker file
 	docker build -t lynis-bridge .
 
-run: ## run detached
-	docker run -d --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest
+run: ## run detached prod with gunicorn
+	docker run -d --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest gunicorn -w 5 main:app  --bind 0.0.0.0:8080
 
-live: ## run interactive
-	docker run -ti --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest
+dev: ## run interactive
+	docker run -ti --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest python3 main.py
