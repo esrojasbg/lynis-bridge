@@ -5,7 +5,7 @@ import mariadb
 import tempfile
 
 # some globals :)
-VERSION = 2.0
+VERSION = 2.1
 SQL = """
     insert into reports (hostname, ip, report) values (?, ?, ?) ON DUPLICATE KEY UPDATE report = ?;
 """
@@ -33,7 +33,13 @@ def init_db():
             KEY (id),
             PRIMARY KEY(hostname, ip),
             hardening_index int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.hardening_index') as int)),
-            vulnerable_packages_found int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.vulnerable_packages_found') as int))
+            vulnerable_packages_found int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.vulnerable_packages_found') as int)),
+            index (hardening_index),
+            index (vulnerable_packages_found),
+            index (hostname),
+            index (ip),
+            index (ROW_START),
+            index (ROW_END)
         ) 
             ENGINE=InnoDB
             PAGE_COMPRESSED=1
