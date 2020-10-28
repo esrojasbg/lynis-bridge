@@ -1,0 +1,46 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: get hostnames
+      community.mysql.mysql_query:
+        login_db: lynis
+        login_host: "{{ DATABASE_HOST }}"
+        login_password: "{{ DATABASE_PASSWORD }}"
+        login_user: lynis
+        query: SELECT DISTINCT hostname FROM reports
+      register: hostnames
+
+    - name: process hostnames
+      set_fact:
+        HOSTNAMES: "{{ HOSTNAMES|default([]) + NEW_HOST }}"
+        GRAFANA_LIST: "{{ GRAFANA_LIST|default([]) + GRAFANA_OPTION }}"
+      vars:
+        NEW_HOST: 
+          - "{{ item.hostname }}"
+        GRAFANA_OPTION:
+          - selected: false
+            text: "{{ item.hostname }}"
+            value: "{{ item.hostname }}"
+      with_items: "{{ hostnames.query_result[0] }}"
+
+    - name: process string
+      set_fact:
+        GRAFANA_STRING: "{{ HOSTNAMES| join(',') }}"
+        CURRENT: "{{  hostnames.query_result[0][0].hostname }}"
+
+    - name: process json
+      copy:
+        dest: lynis-grafana.json
+        content: "{{ lookup('template', 'dashboard.j2') }}"
+
+    - name: create or update grafana dashboard lynis
+      community.grafana.grafana_dashboard:
+        grafana_url: "{{ GRAFANA_HOST }}"
+        grafana_api_key: "{{ GRAFANA_API_TOKEN }}"
+        state: present
+        commit_message: Updated by ansible
+        overwrite: yes
+        path: lynis-grafana.json
