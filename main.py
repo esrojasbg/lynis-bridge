@@ -4,6 +4,7 @@ from bottle import route, request, HTTPResponse, static_file, run
 import mariadb
 import tempfile
 import bottle
+from pathlib import Path
 
 # some globals :)
 VERSION = 2.1
@@ -12,12 +13,24 @@ SQL = """
 """
 
 def db_connection():
-    db = mariadb.connect(
-        host = os.environ.get('DATABASE_HOST') or 'mariadb',
-        port = 3306,
-        user = os.environ.get('DATABASE_USER') or 'lynis',
-        password = os.environ.get('DATABASE_PASSWORD') or 'lynis',
-        database = os.environ.get('DATABASE') or 'lynis')
+
+    ssl = Path("/opt/mariadb.pem")
+    if ssl.is_file():
+        print("use ssl")
+        db = mariadb.connect(
+            host = os.environ.get('DATABASE_HOST') or 'mariadb',
+            port = 3306,
+            user = os.environ.get('DATABASE_USER') or 'lynis',
+            password = os.environ.get('DATABASE_PASSWORD') or 'lynis',
+            database = os.environ.get('DATABASE') or 'lynis',
+            ssl_ca = "/opt/mariadb.pem")
+    else:
+        db = mariadb.connect(
+            host = os.environ.get('DATABASE_HOST') or 'mariadb',
+            port = 3306,
+            user = os.environ.get('DATABASE_USER') or 'lynis',
+            password = os.environ.get('DATABASE_PASSWORD') or 'lynis',
+            database = os.environ.get('DATABASE') or 'lynis')
     db.autocommit = True
     return db
 
