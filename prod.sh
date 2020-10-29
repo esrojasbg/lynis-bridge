@@ -11,7 +11,7 @@ else
             -out cert.pem -days 365 -nodes -subj "/C=EU/ST=EU/L=EU/O=lynis/CN=lynis-bridge"
     fi
     # SSL was requested with a server.key
-    gunicorn -w 5 --certfile=cert.pem --keyfile=key.pem --bind 0.0.0.0:8080 main:app
+    gunicorn -w 5 --ssl-version TLSv1_2 --certfile=cert.pem --keyfile=key.pem --bind 0.0.0.0:8080 main:app
 fi
 
 
