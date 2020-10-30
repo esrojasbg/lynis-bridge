@@ -96,6 +96,23 @@ def init_db():
             suggest IS NOT NULL;
     """
     cursor.execute(sql)
+    sql = """
+        create or replace view vulnerable as with t as (
+            select
+                *
+            from
+                seq_0_to_999)
+            SELECT
+                hostname,
+                ip,
+                json_unquote(json_extract(`report`, CONCAT('$.vulnerable_package[', cast(t.seq as char), ']'))) as vulnerable_package
+            from
+                reports
+            join t
+            HAVING
+                vulnerable_package is not null and vulnerable_package != 'NA';
+    """
+    cursor.execute(sql)
     cursor.close()
     db.close()
 
