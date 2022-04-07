@@ -14,5 +14,7 @@ build: ## build docker file
 run: ## run detached prod with gunicorn
 	docker run -d --rm --network host -e SSL=yes -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest ./prod.sh
 
+	docker run -d --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=lynis -e DATABASE_PASSWORD=lynis esrojasbg/lynisbrige:1.0 ./prod.sh
+
 dev: ## run interactive
 	docker run -ti --rm --network host -e DATABASE_HOST="127.0.0.1" -e DATABASE_USER=m -e DATABASE_PASSWORD=nomysql1 lynis-bridge:latest python3 main.py

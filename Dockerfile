@@ -12,7 +12,7 @@ RUN apk --update --no-cache add python3 \
     mariadb-connector-c \
     openssl
 
-COPY --from=build /usr/lib/python3.8/site-packages/ /usr/lib/python3.8/site-packages/
+COPY --from=build /usr/lib/python3.10/site-packages/ /usr/lib/python3.10/site-packages/
 COPY --from=build /usr/bin/gunicorn /usr/bin/gunicorn
 
 COPY lynis-report-converter.pl /opt/
@@ -20,3 +20,10 @@ COPY main.py /opt/
 COPY prod.sh /opt/
 WORKDIR /opt/
 USER nobody
+ARG DATABASE_HOST
+ARG DATABASE_USER
+ARG DATABASE_PASSWORD
+ARG DATABASE 
+# Se deshabilita termporalmente para la creacion de la tablas
+CMD ["/bin/sh","prod.sh"]
+#CMD ["python3","main.py"]

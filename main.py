@@ -18,7 +18,7 @@ def db_connection():
     if ssl.is_file():
         print("use ssl")
         db = mariadb.connect(
-            host = os.environ.get('DATABASE_HOST') or 'mariadb',
+            host = os.environ.get('DATABASE_HOST') or 'localhost',
             port = 3306,
             user = os.environ.get('DATABASE_USER') or 'lynis',
             password = os.environ.get('DATABASE_PASSWORD') or 'lynis',
@@ -26,7 +26,7 @@ def db_connection():
             ssl_ca = "/opt/mariadb.pem")
     else:
         db = mariadb.connect(
-            host = os.environ.get('DATABASE_HOST') or 'mariadb',
+            host = os.environ.get('DATABASE_HOST') or 'localhost',
             port = 3306,
             user = os.environ.get('DATABASE_USER') or 'lynis',
             password = os.environ.get('DATABASE_PASSWORD') or 'lynis',
@@ -48,8 +48,8 @@ def init_db():
             PRIMARY KEY(hostname, ip),
             hardening_index int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.hardening_index') as int)),
             vulnerable_packages_found int GENERATED ALWAYS AS (cast(JSON_EXTRACT(`report`, '$.vulnerable_packages_found') as int)),
-            index (hardening_index, vulnerable_packages_found),
-            index (ROW_START, ROW_END)
+            index (hardening_index, vulnerable_packages_found)
+            
         ) 
             ENGINE=InnoDB
             PAGE_COMPRESSED=1;
@@ -138,11 +138,18 @@ def preprocessing(data):
 def index():
     return HTTPResponse(status=200)
 
+@route('/init')
+def init():
+    init_db()
+    return HTTPResponse(status=200)
+
+
 @route('/upload', method='POST')
 def do_upload():
 
     agent = request.environ.get('HTTP_USER_AGENT') 
     if agent != 'lynis-bridge':
+        
         return HTTPResponse(status=403)
 
     else:
@@ -159,9 +166,12 @@ def do_upload():
     
         db = db_connection()
         cursor = db.cursor()
-        cursor.execute(SQL, (data['hostname'], client_ip, json.dumps(data), json.dumps(data)))
+        cursor.execute(SQL, (data['hostname'], client_ip, json.dumps(data), json.dumps
+        (data)))
+        
         cursor.close()
         db.close()
+
         return HTTPResponse(status=200)
         
 

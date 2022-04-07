@@ -10,6 +10,7 @@ When using lynis-cron, you can post the result to your lynis-bridge with curl (_
 
 ```
 curl -A "lynis-bridge" -F data=@lynis-report.dat http://<lynis-bridge>:8080/upload
+curl -A "lynis-bridge" -F data=@report.dat http://172.16.1.180:30007/upload
 ```
 
 # database
